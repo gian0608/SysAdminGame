@@ -1,0 +1,14 @@
+# Build directories
+build/
+cmake-build-debug/
+
+# OS specific
+.DS_Store
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+
+# Generated files
+compile_commands.json
