@@ -1,39 +1,35 @@
-# SysAdmin Game Instructions
+# SysAdmin Game - Progetto OpenGL
 
-## Prerequisites
-To compile and run this project, you need to provide a few library files that could not be generated automatically.
+Questo progetto è un semplice gioco 3D sviluppato in C++ e OpenGL, dove interpreti un tecnico informatico (SysAdmin) in una server room.
 
-### 1. GLAD (OpenGL Loader)
-You need to generate the GLAD files for OpenGL 3.3 Core.
-1. Go to [https://glad.dav1d.de/](https://glad.dav1d.de/)
-2. Language: C/C++
-3. API: gl -> Version 3.3
-4. Profile: Core
-5. Click "Generate"
-6. Download the zip.
-7. Copy `src/glad.c` to `src/glad.c` in this project (replace the empty file).
-8. Copy `include/glad/glad.h` to `includes/glad/glad.h` (replace the empty file).
-9. Copy `include/KHR/khrplatform.h` to `includes/KHR/khrplatform.h` (replace the empty file).
+## Caratteristiche Principali
 
-### 2. stb_image (Texture Loading)
-1. Download `stb_image.h` from [https://github.com/nothings/stb/blob/master/stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)
-2. Place it in `includes/stb_image.h` (replace the empty file).
+### 1. Sistema di Build (CMake)
+Abbiamo configurato il progetto utilizzando **CMake** per gestire la compilazione in modo automatico e multipiattaforma.
+-   È incluso uno script `run.sh` che configura, compila ed esegue il gioco con un solo comando.
 
-### 3. Textures
-Place your texture images in the `assets/` folder.
-- `assets/container.jpg` (Used for the Player and Servers)
-- `assets/floor.jpg` (Used for the Floor)
+### 2. Ambiente di Gioco
+-   **Pavimento**: Un piano 20x20 texturizzato.
+-   **Muri**: 4 pareti perimetrali che delimitano l'area di gioco.
+-   **Telecamera**: Una visuale isometrica/dall'alto che segue il giocatore per dare una buona visione della stanza.
 
-You can use any jpg/png images.
+### 3. Il Personaggio (SysAdmin)
+Il giocatore non è un semplice cubo, ma un **modello gerarchico** composto da parti separate:
+-   Testa, Corpo, Braccia (Destro/Sinistro), Gambe (Destra/Sinistra).
+-   **Animazione**: Abbiamo implementato una camminata realistica usando funzioni trigonometriche (`sin`) per far oscillare braccia e gambe a tempo mentre ci si muove.
 
-## Building
-Once the files are in place:
+### 4. I Server (PC)
+-   **Generazione**: I server non sono posizionati a mano, ma generati **proceduralmente** in una griglia 4x4.
+-   **Collisioni**: Il giocatore non può attraversare i server o uscire dalla mappa. Abbiamo implementato un sistema di collisioni AABB (Axis-Aligned Bounding Box) che permette anche di "scivolare" lungo gli ostacoli.
+
+### 5. Texturing e Grafica
+-   **Pixel Art**: Abbiamo creato texture personalizzate in stile "pixel art" per il personaggio (faccia, vestiti da tecnico, jeans).
+-   **Texture Separate**: Ogni parte del corpo ha la sua texture specifica (es. la testa ha la faccia solo davanti e i capelli dietro).
+-   **Filtro**: Usiamo il filtro `GL_NEAREST` per mantenere la grafica nitida e "pixelosa" senza sfocature.
+
+## Come Avviare
+Basta eseguire lo script:
 ```bash
-cmake .
-make
-./SysAdminGame
+./run.sh
 ```
-
-## Controls
-- **WASD**: Move the Technician (Player).
-- **SPACE**: Fix a broken server (Red) when close to it.
+Usa **W, A, S, D** per muoverti.

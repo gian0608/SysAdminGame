@@ -12,3 +12,14 @@ cmake-build-debug/
 
 # Generated files
 compile_commands.json
+
+# In-source build artifacts
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+SysAdminGame
+install_manifest.txt
+
+# Clangd cache
+.cache/

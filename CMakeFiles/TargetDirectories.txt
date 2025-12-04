@@ -1,3 +1,0 @@
-/Users/gianmarco/Desktop/MAGISTRALE - PoliTo/Computer Graphics/Lab/OpenGL/Deliverable2/CMakeFiles/SysAdminGame.dir
-/Users/gianmarco/Desktop/MAGISTRALE - PoliTo/Computer Graphics/Lab/OpenGL/Deliverable2/CMakeFiles/edit_cache.dir
-/Users/gianmarco/Desktop/MAGISTRALE - PoliTo/Computer Graphics/Lab/OpenGL/Deliverable2/CMakeFiles/rebuild_cache.dir

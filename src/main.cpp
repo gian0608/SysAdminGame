@@ -23,7 +23,8 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // Camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 10.0f, 10.0f); // Top-down isometric-ish
+glm::vec3 cameraPos =
+    glm::vec3(0.0f, 15.0f, 15.0f); // Top-down isometric-ish (Closer view)
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -152,18 +153,33 @@ int main() {
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  // load and create a texture
+  // Load Textures
   // -------------------------
+  stbi_set_flip_vertically_on_load(true); // Fix texture orientation
   unsigned int texture1 = loadTexture("assets/container.jpg"); // Dummy texture
   unsigned int textureFloor = loadTexture("assets/floor.jpg"); // Dummy texture
+  unsigned int textureWall = loadTexture("assets/wall.jpg");
+  unsigned int textureHead = loadTexture("assets/char_head.jpg");
+  unsigned int textureHair = loadTexture("assets/char_hair.jpg");
+  unsigned int textureBody = loadTexture("assets/char_body.jpg");
+  unsigned int textureArm = loadTexture("assets/char_arm.jpg");
+  unsigned int textureLeg = loadTexture("assets/char_leg.jpg");
+  unsigned int textureServer = loadTexture("assets/server.jpg");
+  unsigned int textureMonitor = loadTexture("assets/monitor.jpg");
+  unsigned int textureKeyboard = loadTexture("assets/keyboard.jpg");
 
   ourShader.use();
   ourShader.setInt("texture1", 0);
 
-  // Initialize Servers
-  servers.push_back({glm::vec3(-3.0f, 0.5f, -3.0f), true, 0.0f});
-  servers.push_back({glm::vec3(3.0f, 0.5f, -2.0f), false, 0.0f});
-  servers.push_back({glm::vec3(0.0f, 0.5f, 4.0f), true, 0.0f});
+  // Initialize Servers (Grid Layout)
+  // Grid from -6 to 6 with step 4 (positions: -6, -2, 2, 6) -> 4x4 grid
+  for (float x = -6.0f; x <= 6.0f; x += 4.0f) {
+    for (float z = -6.0f; z <= 6.0f; z += 4.0f) {
+      // Randomly decide if broken (50% chance)
+      bool broken = (rand() % 2) == 0;
+      servers.push_back({glm::vec3(x, 0.5f, z), broken, 0.0f});
+    }
+  }
 
   glEnable(GL_DEPTH_TEST);
 
@@ -206,13 +222,46 @@ int main() {
     ourShader.setMat4("model", model);
     ourShader.setVec3("objectColor",
                       glm::vec3(1.0f, 1.0f, 1.0f)); // White tint (normal)
+    // Default UVs for floor/walls
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f));
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Draw Walls
+    glBindVertexArray(VAO);                    // Switch back to cube VAO
+    glBindTexture(GL_TEXTURE_2D, textureWall); // Use wall texture
+    // North
+    model = glm::mat4(1.0f);
+    model = glm::translate(
+        model, glm::vec3(0.0f, 1.5f, -10.0f)); // Height 3.0 -> Center Y 1.5
+    model = glm::scale(model, glm::vec3(20.0f, 3.0f, 0.5f));
+    ourShader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // South
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 10.0f));
+    model = glm::scale(model, glm::vec3(20.0f, 3.0f, 0.5f));
+    ourShader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // East
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(10.0f, 1.5f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.5f, 3.0f, 20.0f));
+    ourShader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // West
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-10.0f, 1.5f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.5f, 3.0f, 20.0f));
+    ourShader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // Draw Player (Character)
     glBindVertexArray(VAO);
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    // Remove global texture bind, we bind per part
+    // glBindTexture(GL_TEXTURE_2D, texture1);
     ourShader.setVec3("objectColor",
-                      glm::vec3(0.0f, 0.0f, 1.0f)); // Blue tint for player
+                      glm::vec3(1.0f, 1.0f, 1.0f)); // Full texture color
 
     // Animation State
     bool isWalking = false;
@@ -233,10 +282,13 @@ int main() {
     float limbAngle = sin(walkTime) * glm::radians(45.0f);
 
     // 1. Body
+    glBindTexture(GL_TEXTURE_2D, textureBody);
     model = glm::mat4(1.0f);
     model = glm::translate(model, playerPos);
     model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.4f));
     ourShader.setMat4("model", model);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f)); // Full texture
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // 2. Head
@@ -244,9 +296,22 @@ int main() {
     model = glm::translate(model, playerPos + glm::vec3(0.0f, 0.6f, 0.0f));
     model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
     ourShader.setMat4("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f));
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
+
+    // Draw Hair (Back, Top, Bottom, Left, Right)
+    // Indices: 0-6 (Back), 12-36 (Top, Bottom, Right, Left)
+    glBindTexture(GL_TEXTURE_2D, textureHair);
+    glDrawArrays(GL_TRIANGLES, 0, 6);   // Back
+    glDrawArrays(GL_TRIANGLES, 12, 24); // Top, Bottom, Right, Left
+
+    // Draw Face (Front)
+    // Indices: 6-12 (Front)
+    glBindTexture(GL_TEXTURE_2D, textureHead);
+    glDrawArrays(GL_TRIANGLES, 6, 6); // Front
 
     // 3. Right Arm
+    glBindTexture(GL_TEXTURE_2D, textureArm);
     model = glm::mat4(1.0f);
     // Pivot point at shoulder (top of arm)
     glm::vec3 rightArmPos = playerPos + glm::vec3(0.45f, 0.1f, 0.0f);
@@ -257,9 +322,12 @@ int main() {
     model = glm::translate(model, glm::vec3(0.0f, -0.3f, 0.0f)); // Move back
     model = glm::scale(model, glm::vec3(0.2f, 0.6f, 0.2f));
     ourShader.setMat4("model", model);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f)); // Full texture
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // 4. Left Arm
+    glBindTexture(GL_TEXTURE_2D, textureArm);
     model = glm::mat4(1.0f);
     glm::vec3 leftArmPos = playerPos + glm::vec3(-0.45f, 0.1f, 0.0f);
     model = glm::translate(model, leftArmPos);
@@ -268,9 +336,12 @@ int main() {
     model = glm::translate(model, glm::vec3(0.0f, -0.3f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f, 0.6f, 0.2f));
     ourShader.setMat4("model", model);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f)); // Full texture
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // 5. Right Leg
+    glBindTexture(GL_TEXTURE_2D, textureLeg);
     model = glm::mat4(1.0f);
     glm::vec3 rightLegPos = playerPos + glm::vec3(0.15f, -0.6f, 0.0f);
     model = glm::translate(model, rightLegPos);
@@ -279,9 +350,12 @@ int main() {
     model = glm::translate(model, glm::vec3(0.0f, -0.3f, 0.0f));
     model = glm::scale(model, glm::vec3(0.25f, 0.6f, 0.25f));
     ourShader.setMat4("model", model);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f)); // Full texture
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // 6. Left Leg
+    glBindTexture(GL_TEXTURE_2D, textureLeg);
     model = glm::mat4(1.0f);
     glm::vec3 leftLegPos = playerPos + glm::vec3(-0.15f, -0.6f, 0.0f);
     model = glm::translate(model, leftLegPos);
@@ -290,31 +364,37 @@ int main() {
     model = glm::translate(model, glm::vec3(0.0f, -0.3f, 0.0f));
     model = glm::scale(model, glm::vec3(0.25f, 0.6f, 0.25f));
     ourShader.setMat4("model", model);
+    ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f)); // Full texture
+    ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // Draw Servers
-    for (auto &server : servers) {
+    // Draw Servers (PC Workstations)
+    // Draw Servers (PC Cubes)
+    for (const auto &server : servers) {
       model = glm::mat4(1.0f);
+      model = glm::translate(model, server.position);
 
       // Animation Logic
       if (server.isBroken) {
-        server.animationTime += deltaTime;
-        // Vibration effect
-        float offset = sin(server.animationTime * 10.0f) * 0.05f;
-        model = glm::translate(model, server.position +
-                                          glm::vec3(offset, 0.0f, offset));
+        float time = glfwGetTime();
+        float offset = sin(time * 10.0f) * 0.05f;
+        model = glm::translate(model, glm::vec3(offset, 0.0f, 0.0f));
         ourShader.setVec3("objectColor",
-                          glm::vec3(1.0f, 0.0f, 0.0f)); // Red for broken
+                          glm::vec3(1.0f, 0.5f, 0.5f)); // Red tint
       } else {
-        // Pop animation check (simple scale pulse if just fixed, but for now
-        // just static green)
-        model = glm::translate(model, server.position);
-        ourShader.setVec3("objectColor",
-                          glm::vec3(0.0f, 1.0f, 0.0f)); // Green for working
+        ourShader.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f)); // Normal
       }
 
       ourShader.setMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+
+      // Draw Case (Back, Top, Bottom, Left, Right)
+      glBindTexture(GL_TEXTURE_2D, textureServer);
+      glDrawArrays(GL_TRIANGLES, 0, 6);   // Back
+      glDrawArrays(GL_TRIANGLES, 12, 24); // Top, Bottom, Right, Left
+
+      // Draw Screen (Front)
+      glBindTexture(GL_TEXTURE_2D, textureMonitor);
+      glDrawArrays(GL_TRIANGLES, 6, 6); // Front
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
@@ -395,7 +475,7 @@ void processInput(GLFWwindow *window) {
 
   // Camera follows player (simple)
   cameraTarget = playerPos;
-  cameraPos = playerPos + glm::vec3(0.0f, 10.0f, 10.0f);
+  cameraPos = playerPos + glm::vec3(0.0f, 15.0f, 15.0f);
 
   // Interaction
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
@@ -448,8 +528,8 @@ unsigned int loadTexture(const char *path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    GL_NEAREST); // Pixel art look
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     stbi_image_free(data);
   } else {
