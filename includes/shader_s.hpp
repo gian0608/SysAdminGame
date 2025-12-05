@@ -13,29 +13,29 @@ class Shader {
 public:
   unsigned int ID;
 
-  // constructor generates the shader on the fly
+  // il costruttore genera lo shader al volo
   // ------------------------------------------------------------------------
   Shader(const char *vertexPath, const char *fragmentPath) {
-    // 1. retrieve the vertex/fragment source code from filePath
+    // 1. recupera il codice sorgente vertex/fragment dal percorso del file
     std::string vertexCode;
     std::string fragmentCode;
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
-    // ensure ifstream objects can throw exceptions:
+    // si assicura che gli oggetti ifstream lanciano eccezioni:
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try {
-      // open files
+      // apri i file
       vShaderFile.open(vertexPath);
       fShaderFile.open(fragmentPath);
       std::stringstream vShaderStream, fShaderStream;
-      // read file's buffer contents into streams
+      // leggi il contenuto del buffer del file negli stream
       vShaderStream << vShaderFile.rdbuf();
       fShaderStream << fShaderFile.rdbuf();
-      // close file handlers
+      // chiudi i gestori dei file
       vShaderFile.close();
       fShaderFile.close();
-      // convert stream into string
+      // converti lo stream in stringa
       vertexCode = vShaderStream.str();
       fragmentCode = fShaderStream.str();
     } catch (std::ifstream::failure &e) {
@@ -44,7 +44,7 @@ public:
     }
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
-    // 2. compile shaders
+    // 2. compila gli shader
     unsigned int vertex, fragment;
     // vertex shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -56,21 +56,21 @@ public:
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
     checkCompileErrors(fragment, "FRAGMENT");
-    // shader Program
+    // Programma shader
     ID = glCreateProgram();
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
     glLinkProgram(ID);
     checkCompileErrors(ID, "PROGRAM");
-    // delete the shaders as they're linked into our program now and no longer
-    // necessary
+    // elimina gli shader poiché sono ora collegati al nostro programma e non
+    // sono più necessari
     glDeleteShader(vertex);
     glDeleteShader(fragment);
   }
-  // activate the shader
+  // attiva lo shader
   // ------------------------------------------------------------------------
   void use() { glUseProgram(ID); }
-  // utility uniform functions
+  // funzioni uniform di utilità
   // ------------------------------------------------------------------------
   void setBool(const std::string &name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
@@ -98,7 +98,8 @@ public:
   }
 
 private:
-  // utility function for checking shader compilation/linking errors.
+  // funzione di utilità per controllare errori di compilazione/linking dello
+  // shader.
   // ------------------------------------------------------------------------
   void checkCompileErrors(unsigned int shader, std::string type) {
     int success;
