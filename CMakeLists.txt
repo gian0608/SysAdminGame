@@ -9,11 +9,19 @@ find_package(glfw3 REQUIRED)
 
 # Include directories
 include_directories(${CMAKE_SOURCE_DIR}/includes)
+include_directories(${CMAKE_SOURCE_DIR}/includes/imgui)
 
 # Source files
 set(SOURCES
     src/main.cpp
     src/glad.c
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_tables.cpp
+    src/imgui/imgui_widgets.cpp
+    src/imgui/imgui_impl_glfw.cpp
+    src/imgui/imgui_impl_opengl3.cpp
 )
 
 # Executable

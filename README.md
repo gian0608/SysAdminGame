@@ -27,9 +27,28 @@ Il giocatore non è un semplice cubo, ma un **modello gerarchico** composto da p
 -   **Texture Separate**: Ogni parte del corpo ha la sua texture specifica (es. la testa ha la faccia solo davanti e i capelli dietro).
 -   **Filtro**: Usiamo il filtro `GL_NEAREST` per mantenere la grafica nitida e "pixelosa" senza sfocature.
 
+## Prerequisiti e Installazione
+
+Prima di avviare il gioco, assicurati di aver installato le dipendenze necessarie.
+
+### macOS (via Homebrew)
+```bash
+brew install cmake glfw
+```
+
+### Linux (Debian/Ubuntu)
+```bash
+sudo apt-get update
+sudo apt-get install cmake libglfw3-dev
+```
+
+### Windows
+È necessario avere **CMake** e un compilatore C++ (es. Visual Studio o MinGW). GLFW viene gestito tramite CMake, ma potrebbe essere necessario scaricare i binari precompilati se non presenti nel path.
+
 ## Come Avviare
 Basta eseguire lo script:
 ```bash
 ./run.sh
 ```
 Usa **W, A, S, D** per muoverti.
+

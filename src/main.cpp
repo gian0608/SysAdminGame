@@ -14,6 +14,10 @@
 #include <iostream>
 #include <vector>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(const char *path);
@@ -81,6 +85,36 @@ int main() {
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetWindowAspectRatio(window, SCR_WIDTH, SCR_HEIGHT);
+
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+
+  // Setup Dear ImGui style
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+  ImGuiStyle &style = ImGui::GetStyle();
+  style.WindowRounding = 10.0f;
+  style.FrameRounding = 5.0f;
+  style.PopupRounding = 5.0f;
+  style.ScrollbarRounding = 5.0f;
+  style.GrabRounding = 5.0f;
+
+  style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.105f, 0.11f, 1.0f);
+  style.Colors[ImGuiCol_Header] = ImVec4(0.2f, 0.205f, 0.21f, 1.0f);
+  style.Colors[ImGuiCol_Button] =
+      ImVec4(0.0f, 0.45f, 0.75f, 1.0f); // Modern Blue
+  style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.55f, 0.85f, 1.0f);
+  style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.35f, 0.65f, 1.0f);
+  style.Colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.0f);
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init("#version 330");
 
   // glad: carica tutti i puntatori alle funzioni OpenGL
   // ---------------------------------------
@@ -209,8 +243,8 @@ int main() {
       loadTexture("assets/textures/computer/monitor.jpg");
   unsigned int textureKeyboard =
       loadTexture("assets/textures/computer/keyboard.jpg");
-  unsigned int texturePlay = loadTexture("assets/images/play_button.png");
-  unsigned int textureExit = loadTexture("assets/images/exit_button.png");
+  unsigned int textureMenuBg = loadTexture("assets/images/menu_bg.png");
+  unsigned int textureLogo = loadTexture("assets/images/game_logo.png");
 
   ourShader.use();
   ourShader.setInt("texture1", 0);
@@ -241,39 +275,7 @@ int main() {
     if (currentState == GAME) {
       processInput(window);
     } else {
-      // Input Menu
-      if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-      // Gestione Mouse
-      double xpos, ypos;
-      glfwGetCursorPos(window, &xpos, &ypos);
-      // Inverti Y perché OpenGL (0,0) è in basso a sinistra, ma glfw è in alto
-      // a sinistra Tuttavia, useremo una proiezione ortografica con (0,0) in
-      // basso a sinistra per coerenza Quindi dobbiamo convertire la Y del
-      // mouse:
-      ypos = SCR_HEIGHT - ypos;
-
-      bool mouseDown =
-          glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
-      // Pulsante Gioca: Centro (400, 350), Dim (200, 80)
-      // Bounds: x [300, 500], y [310, 390]
-      if (xpos >= 300 && xpos <= 500 && ypos >= 310 && ypos <= 390) {
-        if (mouseDown && !mousePressed) {
-          currentState = GAME;
-        }
-      }
-
-      // Pulsante Esci: Centro (400, 250), Dim (200, 80)
-      // Bounds: x [300, 500], y [210, 290]
-      if (xpos >= 300 && xpos <= 500 && ypos >= 210 && ypos <= 290) {
-        if (mouseDown && !mousePressed) {
-          glfwSetWindowShouldClose(window, true);
-        }
-      }
-
-      mousePressed = mouseDown;
+      // ImGui gestira' l'input del menu
     }
 
     // render
@@ -281,41 +283,130 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
     // attiva shader
     ourShader.use();
 
     if (currentState == MENU) {
-      // Render Menu
-      // Proiezione Ortografica 2D
-      glm::mat4 projection =
-          glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT);
-      ourShader.setMat4("projection", projection);
-      ourShader.setMat4("view", glm::mat4(1.0f)); // Nessuna view matrix
+      // Mostra il cursore nel menu
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-      glDisable(GL_DEPTH_TEST); // Disabilita depth test per UI 2D
+      ImGui::SetNextWindowPos(ImVec2(SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f),
+                              ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowSize(ImVec2(320, 250)); // Slightly larger
 
-      glBindVertexArray(quadVAO);
-      ourShader.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-      ourShader.setVec2("uvOffset", glm::vec2(0.0f, 0.0f));
-      ourShader.setVec2("uvScale", glm::vec2(1.0f, 1.0f));
+      // Render Menu Background (Fullscreen Image)
+      // Note: UVs flipped (0,1) to (1,0) because
+      // stbi_set_flip_vertically_on_load(true) makes textures upside down for
+      // ImGui (which expects 0,0 at top-left)
+      ImGui::GetBackgroundDrawList()->AddImage(
+          (void *)(intptr_t)textureMenuBg, ImVec2(0, 0),
+          ImVec2(SCR_WIDTH, SCR_HEIGHT), ImVec2(0, 1), ImVec2(1, 0),
+          IM_COL32(255, 255, 255, 255));
 
-      // Pulsante Gioca
-      glBindTexture(GL_TEXTURE_2D, texturePlay);
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(400.0f, 350.0f, 0.0f));
-      model = glm::scale(model, glm::vec3(200.0f, 80.0f, 1.0f));
-      ourShader.setMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
+      ImGui::SetNextWindowPos(ImVec2(SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f),
+                              ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowSize(ImVec2(320, 250)); // Slightly larger
 
-      // Pulsante Esci
-      glBindTexture(GL_TEXTURE_2D, textureExit);
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(400.0f, 250.0f, 0.0f));
-      model = glm::scale(model, glm::vec3(200.0f, 80.0f, 1.0f));
-      ourShader.setMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
+      // Modern flags: No Title Bar, but rounded
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                          ImVec2(0, 0)); // Remove padding
+      ImGui::Begin("Menu##Principal", NULL,
+                   ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+                       ImGuiWindowFlags_NoBackground |
+                       ImGuiWindowFlags_NoScrollbar |
+                       ImGuiWindowFlags_NoScrollWithMouse);
+
+      // Draw a custom background for the menu (semi-transparent rounded rect)
+      // We'll use a child window for the "Card" look
+      // Use 0,0 size to auto-fill parent, or explicit size.
+      // Also add NoScrollbar flag to prevent scrolling.
+      ImGui::BeginChild("Card", ImVec2(320, 250), true,
+                        ImGuiWindowFlags_NoScrollbar |
+                            ImGuiWindowFlags_NoScrollWithMouse);
+
+      // Centered Logo
+      ImGui::SetCursorPosY(20);
+      float windowWidth = ImGui::GetWindowSize().x;
+      // Logo width/height ratio calculation (assume square or fit)
+      // Logo width/height ratio calculation (assume square 1:1 because image is
+      // 1024x1024)
+      float logoHeight = 150.0f;
+      float logoWidth = 150.0f;
+      ImGui::SetCursorPosX((windowWidth - logoWidth) * 0.5f);
+      ImGui::Image((void *)(intptr_t)textureLogo, ImVec2(logoWidth, logoHeight),
+                   ImVec2(0, 1), ImVec2(1, 0));
+
+      ImGui::Dummy(ImVec2(0.0f, 20.0f)); // Spacer
+
+      // Centered Buttons
+      float buttonWidth = 200.0f;
+      float buttonHeight = 45.0f;
+
+      ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+      if (ImGui::Button("GIOCA", ImVec2(buttonWidth, buttonHeight))) {
+        currentState = GAME;
+      }
+
+      ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacer
+
+      ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+      if (ImGui::Button("ESCI", ImVec2(buttonWidth, buttonHeight))) {
+        glfwSetWindowShouldClose(window, true);
+      }
+
+      // Version Number (Bottom Right)
+      // const char *versionText = "v0.1 Release";
+      // float textW = ImGui::CalcTextSize(versionText).x;
+      // float textH = ImGui::GetTextLineHeight();
+      // ImGui::SetCursorPos(
+      //     ImVec2(windowWidth - textW - 10.0f, 250.0f - textH - 5.0f));
+      // ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "%s", versionText);
+
+      ImGui::EndChild();
+
+      ImGui::End();
+      ImGui::PopStyleVar(); // Pop WindowPadding
+
+      // Version Number (Bottom Right of the Screen)
+      const char *versionText = "v0.1 Release";
+      ImVec2 textSize = ImGui::CalcTextSize(versionText);
+      ImGui::GetForegroundDrawList()->AddText(
+          ImVec2(SCR_WIDTH - textSize.x - 10.0f,
+                 SCR_HEIGHT - textSize.y - 10.0f),
+          IM_COL32(150, 150, 150, 255), versionText);
 
     } else {
+      // Nascondi cursore in gioco (opzionale, ma meglio per FPS style)
+      // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      // Lasciamo il cursore visibile per ora dato che è isometrica/RTS style
+
+      // GUI In-Game
+      ImGui::SetNextWindowPos(ImVec2(10, 10));
+      ImGui::Begin("Overlay", NULL,
+                   ImGuiWindowFlags_NoDecoration |
+                       ImGuiWindowFlags_AlwaysAutoResize |
+                       ImGuiWindowFlags_NoBackground);
+      ImGui::Text("Premi ESC per uscire o tornare al menu (TBD)");
+
+      // Conta server rotti
+      int brokenCount = 0;
+      for (const auto &s : servers)
+        if (s.isBroken)
+          brokenCount++;
+
+      ImGui::Text("Server Rotti: %d / %lu", brokenCount, servers.size());
+      if (brokenCount == 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), "TUTTI I SISTEMI OPERATIVI!");
+      } else {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "ATTENZIONE: GUASTI RILEVATI!");
+      }
+
+      ImGui::End();
       // Render Gioco
       glEnable(GL_DEPTH_TEST); // Riabilita depth test
 
@@ -519,6 +610,9 @@ int main() {
     // glfw: scambia buffer e controlla eventi IO (tasti premuti/rilasciati,
     // mouse mosso ecc.)
     // -------------------------------------------------------------------------------
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
@@ -531,6 +625,11 @@ int main() {
   glDeleteBuffers(1, &floorVBO);
   glDeleteVertexArrays(1, &quadVAO);
   glDeleteBuffers(1, &quadVBO);
+
+  // Cleanup ImGui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
   // glfw: termina, pulendo tutte le risorse GLFW precedentemente allocate.
   // ------------------------------------------------------------------
