@@ -52,3 +52,38 @@ Basta eseguire lo script:
 ```
 Usa **W, A, S, D** per muoverti.
 
+## Project Report & Features
+
+This section indicates how the delivered application satisfies the requested features for the exam.
+
+### 1. Topic Adherence
+*The interactive application must adhere to the topic of the groups' project delivered at the end of the course.*
+- **Compliance**: The application **"SysAdmin Game"** is strictly related to the group project theme. It simulates a server room environment where the player (a SysAdmin) moves around to maintain servers.
+- **Reusability**: The assets (server textures, character style) and the core logic (grid movement, camera) are designed to be reused and expanded for the final group project.
+
+### 2. Playable Application
+*Implementing a playable application with minimal logic.*
+- **gameplay**: The user can launch the game, navigate a 3D environment, and interact with the system via a GUI menu (Start/Exit).
+- **Logic**: Simple collision detection prevents walking through objects, and game states (Menu vs Game) dictate the interaction mode.
+
+### 3. Input Handling
+*Handling of input events, i.e., mouse and keyboards events.*
+- **Keyboard**:
+    - **Movement**: `W`, `A`, `S`, `D` control the character's position.
+    - **Actions**: `Space` is mapped for interaction (repairing servers).
+    - **System**: `ESC` allows quitting or returning to menu.
+- **Mouse**:
+    - **Menu Interaction**: The ImGui integration relies on mouse coordinates and clicks to interact with buttons.
+    - **Camera Control**: While currently fixed for isometric gameplay, the architecture supports mouse look integration.
+
+### 4. Geometric Transformations & Animation
+*Using geometric transformations to animate contents (e.g., moving objects or camera).*
+- **Hierarchical Animation**: The character uses a hierarchical model (Body -> Arms/Legs) where limbs oscillate using `sin(time)` functions to simulate walking.
+- **Camera**: The view matrix transforms the scene to follow the player dynamically.
+- **World**: Translation and Scaling matrices are used to position and size the procedural server grid and map boundaries.
+
+### 5. Simple Objects & Textures
+*Complex objects are not required, simple placeholders with textures are acceptable.*
+- **Models**: We use cubes (primitives) to construct complex looking objects (Servers, Character) by combining them.
+- **Texturing**: All objects are fully textured using custom Pixel Art assets loaded via `stb_image`.
+
