@@ -1,35 +1,31 @@
-# SysAdmin Game - Progetto OpenGL
+# SysAdmin Game - OpenGL Project
 
-Questo progetto è un semplice gioco 3D sviluppato in C++ e OpenGL, dove interpreti un tecnico informatico (SysAdmin) in una server room.
+A 3D simulation game developed in C++ and OpenGL, where you play as a System Administrator maintaining a server room.
 
-## Caratteristiche Principali
+## Overview
+This project demonstrates a 3D interactive application built from scratch using OpenGL. It features a custom engine implementation with procedural generation, hierarchical character animation, and a modern GUI overlay.
 
-### 1. Sistema di Build (CMake)
-Abbiamo configurato il progetto utilizzando **CMake** per gestire la compilazione in modo automatico e multipiattaforma.
--   È incluso uno script `run.sh` che configura, compila ed esegue il gioco con un solo comando.
+## Key Features
 
-### 2. Ambiente di Gioco
--   **Pavimento**: Un piano 20x20 texturizzato.
--   **Muri**: 4 pareti perimetrali che delimitano l'area di gioco.
--   **Telecamera**: Una visuale isometrica/dall'alto che segue il giocatore per dare una buona visione della stanza.
+1.  **Build System**: Fully automated cross-platform build using **CMake**. Includes a helper script for easy compilation.
+2.  **Environment**: 
+    -   A texture-mapped 20x20 server room environment.
+    -   Isometric camera view following the player.
+3.  **Character (SysAdmin)**: 
+    -   Complex hierarchical model (Head, Body, Arms, Legs).
+    -   Procedural walking animation using trigonometric functions.
+4.  **Gameplay**:
+    -   **Procedural Content**: Servers are generated in a random 4x4 grid layout.
+    -   **Collision System**: AABB (Axis-Aligned Bounding Box) collision detection prevents clipping through objects and walls.
+    -   **Interaction**: Approach broken servers (red) and press Space to repair them.
+5.  **Graphics**:
+    -   Custom **Pixel Art** textures.
+    -   `GL_NEAREST` filtering for a crisp retro aesthetic.
+    -   **Dear ImGui** integration for a professional HUD and Menu system.
 
-### 3. Il Personaggio (SysAdmin)
-Il giocatore non è un semplice cubo, ma un **modello gerarchico** composto da parti separate:
--   Testa, Corpo, Braccia (Destro/Sinistro), Gambe (Destra/Sinistra).
--   **Animazione**: Abbiamo implementato una camminata realistica usando funzioni trigonometriche (`sin`) per far oscillare braccia e gambe a tempo mentre ci si muove.
+## Prerequisites
 
-### 4. I Server (PC)
--   **Generazione**: I server non sono posizionati a mano, ma generati **proceduralmente** in una griglia 4x4.
--   **Collisioni**: Il giocatore non può attraversare i server o uscire dalla mappa. Abbiamo implementato un sistema di collisioni AABB (Axis-Aligned Bounding Box) che permette anche di "scivolare" lungo gli ostacoli.
-
-### 5. Texturing e Grafica
--   **Pixel Art**: Abbiamo creato texture personalizzate in stile "pixel art" per il personaggio (faccia, vestiti da tecnico, jeans).
--   **Texture Separate**: Ogni parte del corpo ha la sua texture specifica (es. la testa ha la faccia solo davanti e i capelli dietro).
--   **Filtro**: Usiamo il filtro `GL_NEAREST` per mantenere la grafica nitida e "pixelosa" senza sfocature.
-
-## Prerequisiti e Installazione
-
-Prima di avviare il gioco, assicurati di aver installato le dipendenze necessarie.
+Before running the game, ensure you have the following installed:
 
 ### macOS (via Homebrew)
 ```bash
@@ -43,47 +39,47 @@ sudo apt-get install cmake libglfw3-dev
 ```
 
 ### Windows
-È necessario avere **CMake** e un compilatore C++ (es. Visual Studio o MinGW). GLFW viene gestito tramite CMake, ma potrebbe essere necessario scaricare i binari precompilati se non presenti nel path.
+Requires **CMake** and a C++ compiler (e.g., Visual Studio or MinGW). GLFW is handled via CMake (ensure binaries are available if not using Vcpkg/system install).
 
-## Come Avviare
-Basta eseguire lo script:
+## How to Run
+
+Simply execute the provided script:
 ```bash
 ./run.sh
 ```
-Usa **W, A, S, D** per muoverti.
+**Controls**:
+-   **W, A, S, D**: Move Character
+-   **Space**: Repair Server (Interaction)
+-   **ESC**: Quit / Menu
 
-## Project Report & Features
+---
 
-This section indicates how the delivered application satisfies the requested features for the exam.
+## Project Report: Compliance with Exam Requirements
+
+This section details how the application satisfies the specific requirements for the Computer Graphics exam.
 
 ### 1. Topic Adherence
-*The interactive application must adhere to the topic of the groups' project delivered at the end of the course.*
-- **Compliance**: The application **"SysAdmin Game"** is strictly related to the group project theme. It simulates a server room environment where the player (a SysAdmin) moves around to maintain servers.
-- **Reusability**: The assets (server textures, character style) and the core logic (grid movement, camera) are designed to be reused and expanded for the final group project.
+*Requirement: The application must adhere to the group project topic.*
+-   **Compliance**: The **"SysAdmin Game"** is strictly related to the final project theme. It simulates a server room maintenance scenario.
+-   **Reusability**: Core assets (textures, models) and logic (camera, grid movement) are modular and designed for integration into the final group delivery.
 
 ### 2. Playable Application
-*Implementing a playable application with minimal logic.*
-- **gameplay**: The user can launch the game, navigate a 3D environment, and interact with the system via a GUI menu (Start/Exit).
-- **Logic**: Simple collision detection prevents walking through objects, and game states (Menu vs Game) dictate the interaction mode.
+*Requirement: Implement a playable application with minimal logic.*
+-   **Gameplay**: A complete loop including a Main Menu, active gameplay state, and exit functionality.
+-   **Logic**: Implemented collision detection, game states (Menu/Game), and interaction logic (repairing servers).
 
 ### 3. Input Handling
-*Handling of input events, i.e., mouse and keyboards events.*
-- **Keyboard**:
-    - **Movement**: `W`, `A`, `S`, `D` control the character's position.
-    - **Actions**: `Space` is mapped for interaction (repairing servers).
-    - **System**: `ESC` allows quitting or returning to menu.
-- **Mouse**:
-    - **Menu Interaction**: The ImGui integration relies on mouse coordinates and clicks to interact with buttons.
-    - **Camera Control**: While currently fixed for isometric gameplay, the architecture supports mouse look integration.
+*Requirement: Handling of mouse and keyboard events.*
+-   **Keyboard**: Maps WASD for movement, Space for action, and ESC for system commands.
+-   **Mouse**: Fully integrated with the ImGui menu for UI interactions (clicking buttons, navigating the interface).
 
 ### 4. Geometric Transformations & Animation
-*Using geometric transformations to animate contents (e.g., moving objects or camera).*
-- **Hierarchical Animation**: The character uses a hierarchical model (Body -> Arms/Legs) where limbs oscillate using `sin(time)` functions to simulate walking.
-- **Camera**: The view matrix transforms the scene to follow the player dynamically.
-- **World**: Translation and Scaling matrices are used to position and size the procedural server grid and map boundaries.
+*Requirement: Using geometric transformations to animate contents.*
+-   **Hierarchical Animation**: The character utilizes hierarchical transformations (parent-child relationships for limbs) animated via `sin(time)` to simulate realistic walking.
+-   **Camera & World**: View and Projection matrices transformation for the isometric perspective; Translation/Rotation/Scaling matrices for object placement.
 
 ### 5. Simple Objects & Textures
-*Complex objects are not required, simple placeholders with textures are acceptable.*
-- **Models**: We use cubes (primitives) to construct complex looking objects (Servers, Character) by combining them.
-- **Texturing**: All objects are fully textured using custom Pixel Art assets loaded via `stb_image`.
+*Requirement: Simple placeholders with textures are acceptable.*
+-   **Implementation**: Primitive shapes (cubes) are combined to create complex objects.
+-   **Texturing**: Every object is fully texture-mapped using custom-made pixel art assets loaded via `stb_image`.
 
